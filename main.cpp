@@ -95,7 +95,7 @@ int main()
         -0.059f, 0.059f, 0.0f, 1.0f,
         0.059f, 0.059f, 1.0f, 1.0f
     };
-        float speedPowerupVerticies [] =
+        float powerupVerticies [] =
     {
         0.035f, 0.035f, 1.0f, 1.0f,
         0.035f, -0.035f, 1.0f, 0.0f,
@@ -105,6 +105,7 @@ int main()
         0.035f, 0.035f, 1.0f, 1.0f
     };
     bool isShipDestroyed = false;
+    bool isShipShielded = false;
     int row = 0;
     int col = 0;
     int randomNumberEnemies = 0;
@@ -128,6 +129,7 @@ int main()
     float fallingObjectCooldown = 1.5f;
     float shipSlowTimer = 3.0f;
     float shipFastTimer = 3.0f;
+    float shipShieldTimer = 3.0f;
     float shipSpeed = 0.9;
     getAspectRatio(mainWindow, xBound, yBound); 
 
@@ -147,8 +149,10 @@ int main()
     unsigned int astroidSlowTexture = createTextureToMesh("../Asset Packs/Green Asset Pack/Sprites/Other/Other_Asteroid2.png", 5);
     unsigned int astroidKillModel = createMeshTexture(astroidKillVerticies, sizeof(astroidKillVerticies));
     unsigned int astroidKillTexture = createTextureToMesh("../Asset Packs/Green Asset Pack/Sprites/Other/Other_Asteroid3.png", 6);
-    unsigned int powerupSpeedModel = createMeshTexture(speedPowerupVerticies, sizeof(speedPowerupVerticies));
+    unsigned int powerupSpeedModel = createMeshTexture(powerupVerticies, sizeof(powerupVerticies));
     unsigned int powerupSpeedTexture = createTextureToMesh("../Asset Packs/Pixel Art Gem Pack - Animated/GEM 1/BLUE/GEM 1 - BLUE - 0010.png", 7);
+    unsigned int powerupShieldModel = createMeshTexture(powerupVerticies, sizeof(powerupVerticies));
+    unsigned int powerupShieldTexture = createTextureToMesh("../Asset Packs/Pixel Art Gem Pack - Animated/GEM 2/GOLD/GEM 2 - GOLD - 0010.png", 8);
 
     // Setting Unifrom Vars within the Shader functions
     glUseProgram(textureShaderProgram); //Binds Shader Program
@@ -166,7 +170,7 @@ int main()
     }
 
     //Adds objects in vector (Currently kill/slow astroids/speed powerup)
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++)
     {
         if(i == 0)
         {
@@ -193,6 +197,15 @@ int main()
             fallingObject.objectY = 1.0f;
             fallingObject.speed = generateRandomNumber(0.2, 1, 2);
             fallingObject.type = 2;
+            fallingObjects.push_back(fallingObject);
+        }
+        if(i == 3)
+        {
+            FallingObject fallingObject;
+            fallingObject.objectX = generateRandomNumber(-1, 1, 2);
+            fallingObject.objectY = 1.0f;
+            fallingObject.speed = generateRandomNumber(0.2, 1, 2);
+            fallingObject.type = 3;
             fallingObjects.push_back(fallingObject);
         }
     }
@@ -272,6 +285,11 @@ int main()
                 glUniform1i(textureDataLocation, 7); // Sends slot used to the unifrom var in shader function;
                 glBindVertexArray(powerupSpeedModel);
             }
+                else if(activeFallingObjects[i].type == 3)
+            {
+                glUniform1i(textureDataLocation, 8); // Sends slot used to the unifrom var in shader function;
+                glBindVertexArray(powerupSpeedModel);
+            }
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
 
@@ -338,19 +356,22 @@ int main()
         shipBulletCollisionCheck(shipBullets, enemies, xEnemies, yEnemies, spacing);
 
         // Add enemy bullets (cooldown)
-        enemyBulletSpawner(enemies, enemyBullets, xEnemies, yEnemies, deltaTime, spacing, enemyShootCooldown, randomNumberEnemies);
+        enemyBulletSpawner(enemies, enemyBullets, xEnemies, yEnemies, spacing, enemyShootCooldown, randomNumberEnemies, deltaTime);
 
         // Enemy Bullet Movement and Removal Code
         enemyBulletMovement(enemyBullets, deltaTime);
 
         // Collison check for enemy bullets
-        enemyBulletCollisionCheck(enemyBullets, rightLeftMove, upDownMove, isShipDestroyed);
+        enemyBulletCollisionCheck(enemyBullets, rightLeftMove, upDownMove, isShipDestroyed, isShipShielded);
+
+        // Collison check for enemies hitbox
+        shipAndEnemyCollisionCheck(enemies, rightLeftMove, upDownMove, xEnemies, yEnemies, spacing, isShipDestroyed);
 
         // Falling Objects Movement and Removal Code
         fallingObjectsMovement(activeFallingObjects, deltaTime);
 
         // Collison check for falling object
-        fallingObjectCollisionCheck(activeFallingObjects, rightLeftMove, upDownMove, shipSpeed, shipSlowTimer, shipFastTimer, isShipDestroyed, deltaTime);
+        fallingObjectCollisionCheck(activeFallingObjects, rightLeftMove, upDownMove, shipSpeed, shipSlowTimer, shipFastTimer, shipShieldTimer, isShipDestroyed, isShipShielded, deltaTime);
 
         // Swaps the buffer to show img (this is to prevent stuttering)
         glfwSwapBuffers(mainWindow);

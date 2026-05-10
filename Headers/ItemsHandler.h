@@ -40,7 +40,7 @@ void shipBulletCollisionCheck(std::vector<Bullet> &shipBullets, std::vector<Enem
     }
 }
 
-void enemyBulletSpawner(std::vector <Enemy> &enemies, std::vector <Bullet> &enemyBullets, float xEnemies, float yEnemies, float deltaTime, float spacing, float &enemyShootCooldown, int randomNumber)
+void enemyBulletSpawner(std::vector <Enemy> &enemies, std::vector <Bullet> &enemyBullets, float xEnemies, float yEnemies, float spacing, float &enemyShootCooldown, int randomNumber, float deltaTime)
 {
     if(enemyShootCooldown <= 0.0f)
     {
@@ -71,14 +71,29 @@ void enemyBulletMovement(std::vector<Bullet> &enemyBullets, float deltaTime)
     }
 }
 
-void enemyBulletCollisionCheck(std::vector<Bullet> &enemyBullets, float xAxis, float yAxis, bool &isShipDestroyed)
+void enemyBulletCollisionCheck(std::vector<Bullet> &enemyBullets, float xAxis, float yAxis, bool &isShipDestroyed, bool &isShipShielded)
 {
     for(int i = enemyBullets.size() - 1; i >= 0; i--)
     {
         if(isShipDestroyed == true) continue;
-        if(enemyBullets[i].bulletX >= (xAxis - 0.08f) && enemyBullets[i].bulletX <= (xAxis + 0.08f) && enemyBullets[i].bulletY >= (yAxis - 0.08f) && enemyBullets[i].bulletY <= (yAxis + 0.08f))
+        if(enemyBullets[i].bulletX >= (xAxis - 0.08f) && enemyBullets[i].bulletX <= (xAxis + 0.08f) && enemyBullets[i].bulletY >= (yAxis - 0.08f) && enemyBullets[i].bulletY <= (yAxis + 0.08f) && isShipShielded == false)
         {
             enemyBullets.erase(enemyBullets.begin() + i);
+            isShipDestroyed = true;
+        }
+    }
+}
+
+void shipAndEnemyCollisionCheck(std::vector<Enemy> &enemies, float &shipAxisX, float &shipAxisY, float enemyAxisX, float enemyAxisY, float spacing, bool &isShipDestroyed)
+{
+    for(int i = enemies.size() - 1; i >= 0; i--)
+    {
+        float enemyRow = i / 13;
+        float enemyCol = i % 13;
+        float enemyX = enemyAxisX + (-(12 * spacing) / 2) + (enemyCol * spacing);
+        float enemyY = enemyAxisY - 0.2f - (enemyRow * spacing);
+        if(enemyX <= (shipAxisX + 0.135f) && enemyX >= (shipAxisX - 0.135f) && enemyY <= (shipAxisY + 0.135f) && enemyY >= (shipAxisY - 0.135f))
+        {
             isShipDestroyed = true;
         }
     }
@@ -113,7 +128,7 @@ void fallingObjectsMovement(std::vector<FallingObject> &activeFallingObjects, fl
         }
 }
 
-void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObjects, float xAxis, float yAxis, float &shipSpeed, float &shipSlowTimer, float &shipFastTimer, bool &isShipDestroyed, float deltaTime)
+void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObjects, float xAxis, float yAxis, float &shipSpeed, float &shipSlowTimer, float &shipFastTimer, float &shipShieldTimer, bool &isShipDestroyed, bool &isShipShielded, float deltaTime)
 {
     for(int i = activeFallingObjects.size() - 1; i >= 0; i--)
     {
@@ -125,7 +140,7 @@ void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObject
             continue;
         }
 
-        if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 1)
+        if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 1 && isShipShielded == false)
         {
             activeFallingObjects.erase(activeFallingObjects.begin() + i);
             isShipDestroyed = true;
@@ -139,10 +154,19 @@ void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObject
             shipFastTimer = 3.0f;
             continue;
         }
+            if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 3)
+        {
+            activeFallingObjects.erase(activeFallingObjects.begin() + i);
+            isShipShielded = true;
+            shipShieldTimer = 3.0;
+            continue;
+        }
     }
+    if(shipShieldTimer <= 0.0f) isShipShielded = false;
     if(shipFastTimer <= 0.0f && shipSlowTimer <= 0.0f) shipSpeed = 0.9f;
     shipSlowTimer = shipSlowTimer - deltaTime;
     shipFastTimer = shipFastTimer - deltaTime;
+    shipShieldTimer = shipShieldTimer - deltaTime;
 }
 
 #endif // ITEMSHANDLER_H

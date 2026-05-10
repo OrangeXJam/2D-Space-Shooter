@@ -5,11 +5,11 @@
 // 0 => Slow Astroid - DONE 
 // 1 => Kill Astroid - DONE
 // 2 => Speed power up - DONE
-// 3 => Sheild (Timed)
-// 4 => Extra Live
-// 5 => Faster Fire rate
-// 6 => Double Shoots
-// 7 => Nuke (Kills all enemies on screen)
+// 3 => Sheild (Timed) - DONE
+// 4 => Faster Fire rate
+// 5 => Double Shoots
+// 6 => Nuke (Kills all enemies on screen)
+// 7 => Extra Live
 struct FallingObject
 {
     float objectX;
