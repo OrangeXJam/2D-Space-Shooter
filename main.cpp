@@ -95,7 +95,7 @@ int main()
         -0.059f, 0.059f, 0.0f, 1.0f,
         0.059f, 0.059f, 1.0f, 1.0f
     };
-        float powerupVerticies [] =
+    float powerupVerticies [] =
     {
         0.035f, 0.035f, 1.0f, 1.0f,
         0.035f, -0.035f, 1.0f, 0.0f,
@@ -116,6 +116,7 @@ int main()
     float currentFrame = 0.0f;
     float backgroundScrollOffset = 0.0f;
     float shootCooldown = 0.0f;
+    float shootCooldownReduced = 0.3f;
     float enemyRightLeft = 0.9f;
     float enemyUpDown = 0.2f;
     float spacing = 0.2f;
@@ -130,6 +131,7 @@ int main()
     float shipSlowTimer = 3.0f;
     float shipFastTimer = 3.0f;
     float shipShieldTimer = 3.0f;
+    float shipFirerateTimer = 3.0f;
     float shipSpeed = 0.9;
     getAspectRatio(mainWindow, xBound, yBound); 
 
@@ -153,6 +155,8 @@ int main()
     unsigned int powerupSpeedTexture = createTextureToMesh("../Asset Packs/Pixel Art Gem Pack - Animated/GEM 1/BLUE/GEM 1 - BLUE - 0010.png", 7);
     unsigned int powerupShieldModel = createMeshTexture(powerupVerticies, sizeof(powerupVerticies));
     unsigned int powerupShieldTexture = createTextureToMesh("../Asset Packs/Pixel Art Gem Pack - Animated/GEM 2/GOLD/GEM 2 - GOLD - 0010.png", 8);
+    unsigned int powerupFirerateModel = createMeshTexture(powerupVerticies, sizeof(powerupVerticies));
+    unsigned int powerupFirerateTexture = createTextureToMesh("../Asset Packs/Pixel Art Gem Pack - Animated/GEM 3/PURPLE/GEM 3 - PURPLE - 0010.png", 9);
 
     // Setting Unifrom Vars within the Shader functions
     glUseProgram(textureShaderProgram); //Binds Shader Program
@@ -170,7 +174,7 @@ int main()
     }
 
     //Adds objects in vector (Currently kill/slow astroids/speed powerup)
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < 5; i++)
     {
         if(i == 0)
         {
@@ -208,6 +212,15 @@ int main()
             fallingObject.type = 3;
             fallingObjects.push_back(fallingObject);
         }
+            if(i == 4)
+        {
+            FallingObject fallingObject;
+            fallingObject.objectX = generateRandomNumber(-1, 1, 2);
+            fallingObject.objectY = 1.0f;
+            fallingObject.speed = generateRandomNumber(0.2, 1, 2);
+            fallingObject.type = 4;
+            fallingObjects.push_back(fallingObject);
+        }
     }
 
     glfwSetJoystickCallback(joyStickConnected); // Sets a callback function for controller
@@ -238,9 +251,10 @@ int main()
         }
         if(joystickID != -1)
         {
-            addJoystickMovement(mainWindow, shipBullets, joystickID, rightLeftMove, upDownMove, shootCooldown, shipSpeed, deltaTime);
+            addJoystickMovement(mainWindow, shipBullets, joystickID, rightLeftMove, upDownMove, shootCooldown, shootCooldownReduced, shipSpeed, deltaTime);
         }
-        addKeyboardMovement(mainWindow, shipBullets, rightLeftMove, upDownMove, shootCooldown, shipSpeed, deltaTime);
+        addKeyboardMovement(mainWindow, shipBullets, rightLeftMove, upDownMove, shootCooldown, shootCooldownReduced, shipSpeed, isShipDestroyed, deltaTime);
+        shootCooldown = shootCooldown - deltaTime;
 
         // Clears the screen for next frame
         glClear(GL_COLOR_BUFFER_BIT);
@@ -285,10 +299,15 @@ int main()
                 glUniform1i(textureDataLocation, 7); // Sends slot used to the unifrom var in shader function;
                 glBindVertexArray(powerupSpeedModel);
             }
-                else if(activeFallingObjects[i].type == 3)
+            else if(activeFallingObjects[i].type == 3)
             {
                 glUniform1i(textureDataLocation, 8); // Sends slot used to the unifrom var in shader function;
-                glBindVertexArray(powerupSpeedModel);
+                glBindVertexArray(powerupShieldModel);
+            }
+            else if(activeFallingObjects[i].type == 4)
+            {
+                glUniform1i(textureDataLocation, 9); // Sends slot used to the unifrom var in shader function;
+                glBindVertexArray(powerupFirerateModel);
             }
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
@@ -371,7 +390,7 @@ int main()
         fallingObjectsMovement(activeFallingObjects, deltaTime);
 
         // Collison check for falling object
-        fallingObjectCollisionCheck(activeFallingObjects, rightLeftMove, upDownMove, shipSpeed, shipSlowTimer, shipFastTimer, shipShieldTimer, isShipDestroyed, isShipShielded, deltaTime);
+        fallingObjectCollisionCheck(activeFallingObjects, rightLeftMove, upDownMove, shipSpeed, isShipDestroyed, isShipShielded, shipSlowTimer, shipFastTimer, shipShieldTimer, shipFirerateTimer, shootCooldownReduced, deltaTime);
 
         // Swaps the buffer to show img (this is to prevent stuttering)
         glfwSwapBuffers(mainWindow);

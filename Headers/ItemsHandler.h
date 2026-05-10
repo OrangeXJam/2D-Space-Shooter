@@ -88,6 +88,7 @@ void shipAndEnemyCollisionCheck(std::vector<Enemy> &enemies, float &shipAxisX, f
 {
     for(int i = enemies.size() - 1; i >= 0; i--)
     {
+        if(enemies[i].isAlive == false) continue;
         float enemyRow = i / 13;
         float enemyCol = i % 13;
         float enemyX = enemyAxisX + (-(12 * spacing) / 2) + (enemyCol * spacing);
@@ -128,7 +129,7 @@ void fallingObjectsMovement(std::vector<FallingObject> &activeFallingObjects, fl
         }
 }
 
-void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObjects, float xAxis, float yAxis, float &shipSpeed, float &shipSlowTimer, float &shipFastTimer, float &shipShieldTimer, bool &isShipDestroyed, bool &isShipShielded, float deltaTime)
+void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObjects, float xAxis, float yAxis, float &shipSpeed, bool &isShipDestroyed, bool &isShipShielded, float &shipSlowTimer, float &shipFastTimer, float &shipShieldTimer, float &shipFirerateTimer, float &shootCooldownReduced, float deltaTime)
 {
     for(int i = activeFallingObjects.size() - 1; i >= 0; i--)
     {
@@ -154,19 +155,28 @@ void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObject
             shipFastTimer = 3.0f;
             continue;
         }
-            if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 3)
+        if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 3)
         {
             activeFallingObjects.erase(activeFallingObjects.begin() + i);
             isShipShielded = true;
-            shipShieldTimer = 3.0;
+            shipShieldTimer = 3.0f;
+            continue;
+        }
+        if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 4)
+        {
+            activeFallingObjects.erase(activeFallingObjects.begin() + i);
+            shootCooldownReduced = 0.15f;
+            shipFirerateTimer = 3.0f;
             continue;
         }
     }
-    if(shipShieldTimer <= 0.0f) isShipShielded = false;
     if(shipFastTimer <= 0.0f && shipSlowTimer <= 0.0f) shipSpeed = 0.9f;
+    if(shipShieldTimer <= 0.0f) isShipShielded = false;
+    if(shipFirerateTimer <= 0.0f) shootCooldownReduced = 0.3f;
     shipSlowTimer = shipSlowTimer - deltaTime;
     shipFastTimer = shipFastTimer - deltaTime;
     shipShieldTimer = shipShieldTimer - deltaTime;
+    shipFirerateTimer = shipFirerateTimer - deltaTime;
 }
 
 #endif // ITEMSHANDLER_H

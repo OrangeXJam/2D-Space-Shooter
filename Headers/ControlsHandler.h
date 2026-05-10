@@ -8,7 +8,7 @@
     #include "StructHandler.h"
     #include "WindowHandler.h"
 
-    void addKeyboardMovement (GLFWwindow* window, std::vector<Bullet> &bullets, float &xAxisMovement, float &yAxisMovement, float &shootCooldown, float shipSpeed, float deltaTime)
+    void addKeyboardMovement (GLFWwindow* window, std::vector<Bullet> &bullets, float &xAxisMovement, float &yAxisMovement, float &shootCooldown, float &shootCooldownReduced, float shipSpeed, bool &isShipDestroyed, float deltaTime)
     {
         float xBound = 1.0f;
         float yBound = 1.0f;
@@ -33,7 +33,7 @@
             yAxisMovement = yAxisMovement - (shipSpeed * deltaTime);
             if(yAxisMovement < -yBound) yAxisMovement = -yBound;
         }
-            if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && isShipDestroyed == false)
         {
             if(shootCooldown <= 0.0f)
             {
@@ -41,13 +41,12 @@
                 bullet.bulletX = xAxisMovement;
                 bullet.bulletY = yAxisMovement + 0.1f;
                 bullets.push_back(bullet);      
-                shootCooldown = 0.3f;
+                shootCooldown = shootCooldownReduced;
             }
         }
-        shootCooldown = shootCooldown - deltaTime;
     }
 
-    void addJoystickMovement (GLFWwindow* window, std::vector<Bullet> &bullets, int joystickID ,float &xAxisMovement, float &yAxisMovement, float &shootCooldown, float shipSpeed, float deltaTime)
+    void addJoystickMovement (GLFWwindow* window, std::vector<Bullet> &bullets, int joystickID ,float &xAxisMovement, float &yAxisMovement, float &shootCooldown, float &shootCooldonwReduced, float shipSpeed, float deltaTime)
     {
         if(glfwJoystickPresent(joystickID))
         {
@@ -79,9 +78,8 @@
                     bullet.bulletX = xAxisMovement;
                     bullet.bulletY = yAxisMovement + 0.1f;
                     bullets.push_back(bullet);      
-                    shootCooldown = 0.3f;
+                    shootCooldown = shootCooldonwReduced;
                 }
-                shootCooldown = shootCooldown - deltaTime;
             }
         }
     }
