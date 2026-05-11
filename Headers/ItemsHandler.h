@@ -97,6 +97,8 @@ void shipAndEnemyCollisionCheck(std::vector<Enemy> &enemies, float &shipAxisX, f
         if(enemyX <= (shipAxisX + 0.135f) && enemyX >= (shipAxisX - 0.135f) && enemyY <= (shipAxisY + 0.135f) && enemyY >= (shipAxisY - 0.135f))
         {
             shipLives = shipLives - 1;
+            shipAxisX = 0.0f;
+            shipAxisY = -0.5f;
             if(shipLives == 0) isShipDestroyed = true;
         }
     }

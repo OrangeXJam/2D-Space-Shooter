@@ -69,12 +69,12 @@ int main()
     };
     float enemyVerticies [] =
     {
-        0.055f, 0.055f, 1.0f, 1.0f,
-        0.055f, -0.055f, 1.0f, 0.0f,
-        -0.055f, -0.055f, 0.0f, 0.0f,
-        -0.055f, -0.055f, 0.0f, 0.0f,
-        -0.055f, 0.055f, 0.0f, 1.0f,
-        0.055f, 0.055f, 1.0f, 1.0f
+        0.070f, 0.055f, 1.0f, 1.0f,
+        0.070f, -0.055f, 1.0f, 0.0f,
+        -0.070f, -0.055f, 0.0f, 0.0f,
+        -0.070f, -0.055f, 0.0f, 0.0f,
+        -0.070f, 0.055f, 0.0f, 1.0f,
+        0.070f, 0.055f, 1.0f, 1.0f
     };
     
     float astroidSlowVerticies [] =
@@ -104,8 +104,20 @@ int main()
         -0.035f, 0.035f, 0.0f, 1.0f,
         0.035f, 0.035f, 1.0f, 1.0f
     };
+    float heartVerticies [] =
+    {
+        0.059f, 0.059f, 1.0f, 1.0f,
+        0.059f, -0.059f, 1.0f, 0.0f,
+        -0.059f, -0.059f, 0.0f, 0.0f,
+        -0.059f, -0.059f, 0.0f, 0.0f,
+        -0.059f, 0.059f, 0.0f, 1.0f,
+        0.059f, 0.059f, 1.0f, 1.0f
+    };
+
+    
     bool isShipDestroyed = false;
     bool isShipShielded = false;
+    bool enemyFrameSwitch = false;
     int row = 0;
     int col = 0;
     int shipLives = 3;
@@ -120,7 +132,7 @@ int main()
     float shootCooldownReduced = 0.3f;
     float enemyRightLeft = 0.9f;
     float enemyUpDown = 0.2f;
-    float spacing = 0.2f;
+    float spacing = 0.25f;
     float xBound = 1.0f;
     float yBound = 1.0f;
     float xEnemies = 0.0f;
@@ -133,31 +145,37 @@ int main()
     float shipFastTimer = 3.0f;
     float shipShieldTimer = 3.0f;
     float shipFirerateTimer = 3.0f;
-    float shipSpeed = 0.9;
+    float shipSpeed = 0.9f;
     getAspectRatio(mainWindow, xBound, yBound); 
 
     glm::mat4 projectionMatrix = createProjectionMatrix(mainWindow);
     unsigned int textureShaderProgram = createTextureShaderProgram();
     unsigned int backgroundModel = createMeshTexture(backgroundVerticies, sizeof(backgroundVerticies));
-    unsigned int backgroundTextureObject = createTextureToMesh("../Asset Packs/PNGs/Background Asset Pack (Full).png", 0);
+    unsigned int backgroundTextureObject = createTextureToMesh("../Asset Packs/Background Asset.png", 0);
     unsigned int shipModel = createMeshTexture(shipVerticies, sizeof(shipVerticies));
-    unsigned int shipTextureObject = createTextureToMesh("../Asset Packs/Green Asset Pack/Sprites/Player/Ship_Mid.png", 1);
+    unsigned int shipTextureObject = createTextureToMesh("../Asset Packs/Ship/Red Space Ship.png", 1);
     unsigned int bulletModel = createMeshTexture(bulletVerticies, sizeof(bulletVerticies));
-    unsigned int bulletTexture = createTextureToMesh("../Asset Packs/PNGs/Bullet Normal.png", 2);
+    unsigned int bulletTexture = createTextureToMesh("../Asset Packs/Ship/Bullet Normal.png", 2);
     unsigned int enemyModel = createMeshTexture(enemyVerticies, sizeof(enemyVerticies));
-    unsigned int enemyTexture = createTextureToMesh("../Asset Packs/Green Asset Pack/Sprites/Aliens/Alien_Air6.png", 3);
+    unsigned int enemyTextureFrame1 = createTextureToMesh("../Asset Packs/Enemies/Red Enemy Frame 1.png", 3);
+    unsigned int enemyTextureFrame2 = createTextureToMesh("../Asset Packs/Enemies/Red Enemy Frame 2.png", 10);
     unsigned int enemyBulletModel = createMeshTexture(bulletVerticies, sizeof(bulletVerticies));
-    unsigned int enemyBulletTexture = createTextureToMesh("../Asset Packs/Lunar Lander Upload/Effects/Enemy Bullet.png", 4);
+    unsigned int enemyBulletTexture = createTextureToMesh("../Asset Packs/Enemies/Red Enemy Bullet.png", 4);
     unsigned int astroidSlowModel = createMeshTexture(astroidSlowVerticies, sizeof(astroidSlowVerticies));
-    unsigned int astroidSlowTexture = createTextureToMesh("../Asset Packs/Green Asset Pack/Sprites/Other/Other_Asteroid2.png", 5);
+    unsigned int astroidSlowTexture = createTextureToMesh("../Asset Packs/Falling Objects/Slow Object.png", 5);
     unsigned int astroidKillModel = createMeshTexture(astroidKillVerticies, sizeof(astroidKillVerticies));
-    unsigned int astroidKillTexture = createTextureToMesh("../Asset Packs/Green Asset Pack/Sprites/Other/Other_Asteroid3.png", 6);
+    unsigned int astroidKillTexture = createTextureToMesh("../Asset Packs/Falling Objects/Kill Object.png", 6);
     unsigned int powerupSpeedModel = createMeshTexture(powerupVerticies, sizeof(powerupVerticies));
-    unsigned int powerupSpeedTexture = createTextureToMesh("../Asset Packs/Pixel Art Gem Pack - Animated/GEM 1/BLUE/GEM 1 - BLUE - 0010.png", 7);
+    unsigned int powerupSpeedTexture = createTextureToMesh("../Asset Packs/Falling Objects/Speed Power Up.png", 7);
     unsigned int powerupShieldModel = createMeshTexture(powerupVerticies, sizeof(powerupVerticies));
-    unsigned int powerupShieldTexture = createTextureToMesh("../Asset Packs/Pixel Art Gem Pack - Animated/GEM 2/GOLD/GEM 2 - GOLD - 0010.png", 8);
+    unsigned int powerupShieldTexture = createTextureToMesh("../Asset Packs/Falling Objects/Shield Power Up.png", 8);
     unsigned int powerupFirerateModel = createMeshTexture(powerupVerticies, sizeof(powerupVerticies));
-    unsigned int powerupFirerateTexture = createTextureToMesh("../Asset Packs/Pixel Art Gem Pack - Animated/GEM 3/PURPLE/GEM 3 - PURPLE - 0010.png", 9);
+    unsigned int powerupFirerateTexture = createTextureToMesh("../Asset Packs/Falling Objects/Fire Rate Power Up.png", 9);
+    unsigned int heartModel = createMeshTexture(heartVerticies, sizeof(heartVerticies));
+    unsigned int heartTextureFull = createTextureToMesh("../Asset Packs/Hearts/Full Heart.png",11);
+    unsigned int heartTextureHalf = createTextureToMesh("../Asset Packs/Hearts/Half Heart.png",12);
+    unsigned int heartTextureZero = createTextureToMesh("../Asset Packs/Hearts/Zero Heart.png",13);
+
 
     // Setting Unifrom Vars within the Shader functions
     glUseProgram(textureShaderProgram); //Binds Shader Program
@@ -175,9 +193,9 @@ int main()
     }
 
     //Adds objects in vector (Currently kill/slow astroids/speed powerup)
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 9; i++)
     {
-        if(i == 0)
+        if(i < 3)
         {
             FallingObject fallingObject;
             fallingObject.objectX = generateRandomNumber(-1, 1, 2);
@@ -186,7 +204,7 @@ int main()
             fallingObject.type = 0;
             fallingObjects.push_back(fallingObject);
         }
-        if(i == 1)
+        if(i >= 3 && i < 6)
         {
             FallingObject fallingObject;
             fallingObject.objectX = generateRandomNumber(-1, 1, 2);
@@ -195,7 +213,7 @@ int main()
             fallingObject.type = 1;
             fallingObjects.push_back(fallingObject);
         }
-        if(i == 2)
+        if(i == 7)
         {
             FallingObject fallingObject;
             fallingObject.objectX = generateRandomNumber(-1, 1, 2);
@@ -204,7 +222,7 @@ int main()
             fallingObject.type = 2;
             fallingObjects.push_back(fallingObject);
         }
-        if(i == 3)
+        if(i == 8)
         {
             FallingObject fallingObject;
             fallingObject.objectX = generateRandomNumber(-1, 1, 2);
@@ -213,7 +231,7 @@ int main()
             fallingObject.type = 3;
             fallingObjects.push_back(fallingObject);
         }
-            if(i == 4)
+            if(i == 9)
         {
             FallingObject fallingObject;
             fallingObject.objectX = generateRandomNumber(-1, 1, 2);
@@ -320,10 +338,11 @@ int main()
             col = i % 13;
             if(enemies[i].isAlive == false) continue;
             glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-            glUniform1i(textureDataLocation, 3); // Sends slot used to the unifrom var in shader function
+            if(enemyFrameSwitch == false) glUniform1i(textureDataLocation, 3); // Sends slot used to the unifrom var in shader function (For Frame 1)
+            else if(enemyFrameSwitch == true) glUniform1i(textureDataLocation, 10); // Sends slot used to the unifrom var in shader function (For Frame 2)
             glUniform2f(newPosVerticiesLocation, xEnemies + (-(12 * spacing) / 2) + (col * spacing), yEnemies - 0.2f - (row * spacing)); // Sends coords
             glUniform2f(newPosTextureLocation, 0.0f, 0.0f); // Sends zero movement to the texture of the enemy
-            glBindVertexArray(enemyModel); // Binds enemy VAO
+            glBindVertexArray(enemyModel);
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
 
@@ -351,11 +370,25 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
 
+        // Draw heart model
+        if(shipLives > 0)
+        {
+            glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix)); // Send identy matrix to stretch bg
+            if(shipLives == 3) glUniform1i(textureDataLocation, 11); // Sends slot used to the unifrom var in shader function
+            else if(shipLives == 2) glUniform1i(textureDataLocation, 12); // Sends slot used to the unifrom var in shader function
+            else if(shipLives == 1) glUniform1i(textureDataLocation, 13); // Sends slot used to the unifrom var in shader function
+            glUniform2f(newPosVerticiesLocation, (-xBound + 0.25f) , -0.8f); // Send no movement first to not move the bg
+            glUniform2f(newPosTextureLocation, 0.0f, 0.0f); // UV scrolling
+            glBindVertexArray(heartModel); // Binds heart VAO
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+
         // Enemy Movement Timer (For blocky movement)
         enemyMoveCooldown = enemyMoveCooldown - deltaTime;
         if(enemyMoveCooldown <= 0.0f)
         {
             enemyMoveCooldown = 1.5f;
+            enemyFrameSwitch = !enemyFrameSwitch;
             if(xEnemies + (12 * spacing) / 2 >= xBound - 0.15f)
             {
                 enemyDirection = -1.0f;
