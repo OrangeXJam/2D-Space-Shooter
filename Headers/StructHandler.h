@@ -6,7 +6,7 @@
 // 1 => Kill Astroid - DONE
 // 2 => Speed power up - DONE
 // 3 => Sheild (Timed) - DONE
-// 4 => Faster Fire rate
+// 4 => Faster Fire rate - DONE
 // 5 => Double Shoots
 // 6 => Nuke (Kills all enemies on screen)
 // 7 => Extra Live

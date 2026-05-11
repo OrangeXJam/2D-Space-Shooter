@@ -108,6 +108,7 @@ int main()
     bool isShipShielded = false;
     int row = 0;
     int col = 0;
+    int shipLives = 3;
     int randomNumberEnemies = 0;
     int randomNumberFallingObject = 0;
     float rightLeftMove = 0.0f;
@@ -381,16 +382,16 @@ int main()
         enemyBulletMovement(enemyBullets, deltaTime);
 
         // Collison check for enemy bullets
-        enemyBulletCollisionCheck(enemyBullets, rightLeftMove, upDownMove, isShipDestroyed, isShipShielded);
+        enemyBulletCollisionCheck(enemyBullets, rightLeftMove, upDownMove, shipLives, isShipDestroyed, isShipShielded);
 
         // Collison check for enemies hitbox
-        shipAndEnemyCollisionCheck(enemies, rightLeftMove, upDownMove, xEnemies, yEnemies, spacing, isShipDestroyed);
+        shipAndEnemyCollisionCheck(enemies, rightLeftMove, upDownMove, xEnemies, yEnemies, shipLives, spacing, isShipDestroyed);
 
         // Falling Objects Movement and Removal Code
         fallingObjectsMovement(activeFallingObjects, deltaTime);
 
         // Collison check for falling object
-        fallingObjectCollisionCheck(activeFallingObjects, rightLeftMove, upDownMove, shipSpeed, isShipDestroyed, isShipShielded, shipSlowTimer, shipFastTimer, shipShieldTimer, shipFirerateTimer, shootCooldownReduced, deltaTime);
+        fallingObjectCollisionCheck(activeFallingObjects, rightLeftMove, upDownMove, shipLives, shipSpeed, isShipDestroyed, isShipShielded, shipSlowTimer, shipFastTimer, shipShieldTimer, shipFirerateTimer, shootCooldownReduced, deltaTime);
 
         // Swaps the buffer to show img (this is to prevent stuttering)
         glfwSwapBuffers(mainWindow);

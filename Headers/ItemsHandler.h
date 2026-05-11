@@ -71,7 +71,7 @@ void enemyBulletMovement(std::vector<Bullet> &enemyBullets, float deltaTime)
     }
 }
 
-void enemyBulletCollisionCheck(std::vector<Bullet> &enemyBullets, float xAxis, float yAxis, bool &isShipDestroyed, bool &isShipShielded)
+void enemyBulletCollisionCheck(std::vector<Bullet> &enemyBullets, float xAxis, float yAxis, int &shipLives, bool &isShipDestroyed, bool &isShipShielded)
 {
     for(int i = enemyBullets.size() - 1; i >= 0; i--)
     {
@@ -79,12 +79,13 @@ void enemyBulletCollisionCheck(std::vector<Bullet> &enemyBullets, float xAxis, f
         if(enemyBullets[i].bulletX >= (xAxis - 0.08f) && enemyBullets[i].bulletX <= (xAxis + 0.08f) && enemyBullets[i].bulletY >= (yAxis - 0.08f) && enemyBullets[i].bulletY <= (yAxis + 0.08f) && isShipShielded == false)
         {
             enemyBullets.erase(enemyBullets.begin() + i);
-            isShipDestroyed = true;
+            shipLives = shipLives - 1;
+            if(shipLives == 0) isShipDestroyed = true;
         }
     }
 }
 
-void shipAndEnemyCollisionCheck(std::vector<Enemy> &enemies, float &shipAxisX, float &shipAxisY, float enemyAxisX, float enemyAxisY, float spacing, bool &isShipDestroyed)
+void shipAndEnemyCollisionCheck(std::vector<Enemy> &enemies, float &shipAxisX, float &shipAxisY, float enemyAxisX, float enemyAxisY, int &shipLives, float spacing, bool &isShipDestroyed)
 {
     for(int i = enemies.size() - 1; i >= 0; i--)
     {
@@ -95,7 +96,8 @@ void shipAndEnemyCollisionCheck(std::vector<Enemy> &enemies, float &shipAxisX, f
         float enemyY = enemyAxisY - 0.2f - (enemyRow * spacing);
         if(enemyX <= (shipAxisX + 0.135f) && enemyX >= (shipAxisX - 0.135f) && enemyY <= (shipAxisY + 0.135f) && enemyY >= (shipAxisY - 0.135f))
         {
-            isShipDestroyed = true;
+            shipLives = shipLives - 1;
+            if(shipLives == 0) isShipDestroyed = true;
         }
     }
 }
@@ -129,7 +131,7 @@ void fallingObjectsMovement(std::vector<FallingObject> &activeFallingObjects, fl
         }
 }
 
-void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObjects, float xAxis, float yAxis, float &shipSpeed, bool &isShipDestroyed, bool &isShipShielded, float &shipSlowTimer, float &shipFastTimer, float &shipShieldTimer, float &shipFirerateTimer, float &shootCooldownReduced, float deltaTime)
+void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObjects, float xAxis, float yAxis, int &shipLives, float &shipSpeed, bool &isShipDestroyed, bool &isShipShielded, float &shipSlowTimer, float &shipFastTimer, float &shipShieldTimer, float &shipFirerateTimer, float &shootCooldownReduced, float deltaTime)
 {
     for(int i = activeFallingObjects.size() - 1; i >= 0; i--)
     {
@@ -144,7 +146,7 @@ void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObject
         if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 1 && isShipShielded == false)
         {
             activeFallingObjects.erase(activeFallingObjects.begin() + i);
-            isShipDestroyed = true;
+            if(shipLives == 0) isShipDestroyed = true;
             continue;
         }
 
