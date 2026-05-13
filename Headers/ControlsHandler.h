@@ -8,7 +8,7 @@
     #include "StructHandler.h"
     #include "WindowHandler.h"
 
-    void addKeyboardMovement (GLFWwindow* window, std::vector<Bullet> &bullets, float &xAxisMovement, float &yAxisMovement, float &shootCooldown, float &shootCooldownReduced, float shipSpeed, bool &isShipDestroyed, float deltaTime)
+    void addKeyboardMovement (GLFWwindow* window, ma_engine &soundEffectsEngine, std::vector<Bullet> &bullets, float &xAxisMovement, float &yAxisMovement, float &shootCooldown, float &shootCooldownReduced, float shipSpeed, bool &isShipDestroyed, float deltaTime)
     {
         float xBound = 1.0f;
         float yBound = 1.0f;
@@ -42,11 +42,12 @@
                 bullet.bulletY = yAxisMovement + 0.1f;
                 bullets.push_back(bullet);      
                 shootCooldown = shootCooldownReduced;
+                ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Player Shoot Sound Effect.wav", NULL);
             }
         }
     }
 
-    void addJoystickMovement (GLFWwindow* window, std::vector<Bullet> &bullets, int joystickID ,float &xAxisMovement, float &yAxisMovement, float &shootCooldown, float &shootCooldonwReduced, float shipSpeed, float deltaTime)
+    void addJoystickMovement (GLFWwindow* window, ma_engine &soundEffectsEngine ,std::vector<Bullet> &bullets, int joystickID ,float &xAxisMovement, float &yAxisMovement, float &shootCooldown, float &shootCooldonwReduced, float shipSpeed, float deltaTime)
     {
         if(glfwJoystickPresent(joystickID))
         {
@@ -79,6 +80,7 @@
                     bullet.bulletY = yAxisMovement + 0.1f;
                     bullets.push_back(bullet);      
                     shootCooldown = shootCooldonwReduced;
+                    ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Player Shoot Sound Effect.wav", NULL);
                 }
             }
         }

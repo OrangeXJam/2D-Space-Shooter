@@ -19,7 +19,7 @@ void shipBulletMovement(float deltaTime, std::vector <Bullet> &bullets)
     }
 }
 
-void shipBulletCollisionCheck(std::vector<Bullet> &shipBullets, std::vector<Enemy> &enemies, float &xEnemies, float &yEnemies, float spacing)
+void shipBulletCollisionCheck(std::vector<Bullet> &shipBullets, std::vector<Enemy> &enemies, ma_engine &soundEffectsEngine, float &xEnemies, float &yEnemies, float spacing)
 {
     for(int i = shipBullets.size() - 1; i >= 0; i--)
     {
@@ -30,17 +30,18 @@ void shipBulletCollisionCheck(std::vector<Bullet> &shipBullets, std::vector<Enem
             int enemyCol = j % 13;
             float enemyCurrentX = xEnemies + (-(12 * spacing) / 2) + (enemyCol * spacing);
             float enemyCurrentY = yEnemies - 0.2f - (enemyRow * spacing);
-            if(shipBullets[i].bulletX <= enemyCurrentX + 0.055f && shipBullets[i].bulletX >= enemyCurrentX - 0.055f && shipBullets[i].bulletY <= enemyCurrentY + 0.055f && shipBullets[i].bulletY >= enemyCurrentY - 0.055f)
+            if(shipBullets[i].bulletX <= enemyCurrentX + 0.070f && shipBullets[i].bulletX >= enemyCurrentX - 0.070f && shipBullets[i].bulletY <= enemyCurrentY + 0.055f && shipBullets[i].bulletY >= enemyCurrentY - 0.055f)
             {
                 shipBullets.erase(shipBullets.begin() + i);
                 enemies[j].isAlive = false;
+                ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Enemy Got Hit Sound Effect.wav", NULL);
                 break;
             }
         }
     }
 }
 
-void enemyBulletSpawner(std::vector <Enemy> &enemies, std::vector <Bullet> &enemyBullets, float xEnemies, float yEnemies, float spacing, float &enemyShootCooldown, int randomNumber, float deltaTime)
+void enemyBulletSpawner(std::vector <Enemy> &enemies, std::vector <Bullet> &enemyBullets, ma_engine &soundEffectsEngine, float xEnemies, float yEnemies, float spacing, float &enemyShootCooldown, int randomNumber, float deltaTime)
 {
     if(enemyShootCooldown <= 0.0f)
     {
@@ -51,7 +52,8 @@ void enemyBulletSpawner(std::vector <Enemy> &enemies, std::vector <Bullet> &enem
         bullet.bulletX = xEnemies + (-(12 * spacing) / 2) + (enemyCol * spacing);
         bullet.bulletY = (yEnemies - 0.2f - (enemyRow * spacing)) - 0.07f;
         enemyBullets.push_back(bullet);
-        enemyShootCooldown = 1.5f;
+        enemyShootCooldown = 0.75f;
+        ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Enemy Shoot Sound Effect.wav", NULL);
     }
     enemyShootCooldown = enemyShootCooldown - deltaTime;
 }
@@ -71,7 +73,7 @@ void enemyBulletMovement(std::vector<Bullet> &enemyBullets, float deltaTime)
     }
 }
 
-void enemyBulletCollisionCheck(std::vector<Bullet> &enemyBullets, float xAxis, float yAxis, int &shipLives, bool &isShipDestroyed, bool &isShipShielded)
+void enemyBulletCollisionCheck(std::vector<Bullet> &enemyBullets, ma_engine &soundEffectsEngine, float xAxis, float yAxis, int &shipLives, bool &isShipDestroyed, bool &isShipShielded)
 {
     for(int i = enemyBullets.size() - 1; i >= 0; i--)
     {
@@ -80,12 +82,13 @@ void enemyBulletCollisionCheck(std::vector<Bullet> &enemyBullets, float xAxis, f
         {
             enemyBullets.erase(enemyBullets.begin() + i);
             shipLives = shipLives - 1;
+            ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Player Got Hit Sound Effect.wav", NULL);
             if(shipLives == 0) isShipDestroyed = true;
         }
     }
 }
 
-void shipAndEnemyCollisionCheck(std::vector<Enemy> &enemies, float &shipAxisX, float &shipAxisY, float enemyAxisX, float enemyAxisY, int &shipLives, float spacing, bool &isShipDestroyed)
+void shipAndEnemyCollisionCheck(std::vector<Enemy> &enemies, ma_engine &soundEffectsEngine, float &shipAxisX, float &shipAxisY, float enemyAxisX, float enemyAxisY, int &shipLives, float spacing, bool &isShipDestroyed)
 {
     for(int i = enemies.size() - 1; i >= 0; i--)
     {
@@ -99,6 +102,7 @@ void shipAndEnemyCollisionCheck(std::vector<Enemy> &enemies, float &shipAxisX, f
             shipLives = shipLives - 1;
             shipAxisX = 0.0f;
             shipAxisY = -0.5f;
+            ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Player Got Hit Sound Effect.wav", NULL);
             if(shipLives == 0) isShipDestroyed = true;
         }
     }
@@ -133,7 +137,7 @@ void fallingObjectsMovement(std::vector<FallingObject> &activeFallingObjects, fl
         }
 }
 
-void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObjects, float xAxis, float yAxis, int &shipLives, float &shipSpeed, bool &isShipDestroyed, bool &isShipShielded, float &shipSlowTimer, float &shipFastTimer, float &shipShieldTimer, float &shipFirerateTimer, float &shootCooldownReduced, float deltaTime)
+void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObjects, ma_engine &soundEffectsEngine, float xAxis, float yAxis, int &shipLives, float &shipSpeed, bool &isShipDestroyed, bool &isShipShielded, float &shipSlowTimer, float &shipFastTimer, float &shipShieldTimer, float &shipFirerateTimer, float &shootCooldownReduced, float deltaTime)
 {
     for(int i = activeFallingObjects.size() - 1; i >= 0; i--)
     {
@@ -142,13 +146,16 @@ void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObject
             activeFallingObjects.erase(activeFallingObjects.begin() + i);
             shipSpeed = shipSpeed / 2;
             shipSlowTimer = 3.0f;
+            ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Astroid Slow Hit Sound Effect.wav", NULL);
             continue;
         }
 
         if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 1 && isShipShielded == false)
         {
             activeFallingObjects.erase(activeFallingObjects.begin() + i);
+            shipLives = shipLives - 1;
             if(shipLives == 0) isShipDestroyed = true;
+            ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Player Got Hit Sound Effect.wav", NULL);
             continue;
         }
 
@@ -157,6 +164,7 @@ void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObject
             activeFallingObjects.erase(activeFallingObjects.begin() + i);
             shipSpeed = shipSpeed * 2;
             shipFastTimer = 3.0f;
+            ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Power Up Pick Up Sound Effect.wav", NULL);
             continue;
         }
         if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 3)
@@ -164,6 +172,7 @@ void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObject
             activeFallingObjects.erase(activeFallingObjects.begin() + i);
             isShipShielded = true;
             shipShieldTimer = 3.0f;
+            ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Power Up Pick Up Sound Effect.wav", NULL);
             continue;
         }
         if(activeFallingObjects[i].objectX >= (xAxis - 0.08f) && activeFallingObjects[i].objectX <= (xAxis + 0.08f) && activeFallingObjects[i].objectY >= (yAxis - 0.08f) && activeFallingObjects[i].objectY <= (yAxis + 0.08f) && activeFallingObjects[i].type == 4)
@@ -171,6 +180,7 @@ void fallingObjectCollisionCheck(std::vector<FallingObject> &activeFallingObject
             activeFallingObjects.erase(activeFallingObjects.begin() + i);
             shootCooldownReduced = 0.15f;
             shipFirerateTimer = 3.0f;
+            ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Power Up Pick Up Sound Effect.wav", NULL);
             continue;
         }
     }

@@ -6,6 +6,7 @@
 // Upload data to the GPU through that target, since the target is connected to the object via the previous step, it is like you're uploading data to the object that you created
 
 #define STB_IMAGE_IMPLEMENTATION
+#define MINIAUDIO_IMPLEMENTATION
 #include <iostream>
 #include <vector>
 #include <random>
@@ -14,6 +15,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Headers/miniaudio.h"
 #include "Headers/WindowHandler.h"
 #include "Headers/ShaderHandler.h"
 #include "Headers/MeshHandler.h"
@@ -114,10 +116,11 @@ int main()
         0.059f, 0.059f, 1.0f, 1.0f
     };
 
-    
+    ma_engine soundEffectsEngine;
     bool isShipDestroyed = false;
     bool isShipShielded = false;
     bool enemyFrameSwitch = false;
+    bool isGameover = false;
     int row = 0;
     int col = 0;
     int shipLives = 3;
@@ -139,7 +142,7 @@ int main()
     float yEnemies = 0.0f;
     float enemyDirection = 1.0f;
     float enemyMoveCooldown = 1.5f;
-    float enemyShootCooldown = 1.5f;
+    float enemyShootCooldown = 0.75f;
     float fallingObjectCooldown = 1.5f;
     float shipSlowTimer = 3.0f;
     float shipFastTimer = 3.0f;
@@ -183,6 +186,8 @@ int main()
     int projectionLocation = glGetUniformLocation(textureShaderProgram, "projectionMatrix");
     int newPosVerticiesLocation = glGetUniformLocation(textureShaderProgram, "newPosVerticies");
     int newPosTextureLocation = glGetUniformLocation(textureShaderProgram, "newPosTexture");
+
+    ma_engine_init(NULL, &soundEffectsEngine); // Sets up the sound engine for use
 
     // Adds enemy count in vector
     for(int i = 0; i < 52; i++)
@@ -270,9 +275,9 @@ int main()
         }
         if(joystickID != -1)
         {
-            addJoystickMovement(mainWindow, shipBullets, joystickID, rightLeftMove, upDownMove, shootCooldown, shootCooldownReduced, shipSpeed, deltaTime);
+            addJoystickMovement(mainWindow, soundEffectsEngine, shipBullets, joystickID, rightLeftMove, upDownMove, shootCooldown, shootCooldownReduced, shipSpeed, deltaTime);
         }
-        addKeyboardMovement(mainWindow, shipBullets, rightLeftMove, upDownMove, shootCooldown, shootCooldownReduced, shipSpeed, isShipDestroyed, deltaTime);
+        addKeyboardMovement(mainWindow, soundEffectsEngine, shipBullets, rightLeftMove, upDownMove, shootCooldown, shootCooldownReduced, shipSpeed, isShipDestroyed, deltaTime);
         shootCooldown = shootCooldown - deltaTime;
 
         // Clears the screen for next frame
@@ -379,8 +384,13 @@ int main()
             else if(shipLives == 1) glUniform1i(textureDataLocation, 13); // Sends slot used to the unifrom var in shader function
             glUniform2f(newPosVerticiesLocation, (-xBound + 0.25f) , -0.8f); // Send no movement first to not move the bg
             glUniform2f(newPosTextureLocation, 0.0f, 0.0f); // UV scrolling
-            glBindVertexArray(heartModel); // Binds heart VAO
+            glBindVertexArray(heartModel); // Binds heart VAO         
             glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+        else if(isGameover == false)
+        {
+            ma_engine_play_sound(&soundEffectsEngine, "../Asset Packs/Sound Effects/Game Over Sound Effectwav.wav", NULL);
+            isGameover = true;
         }
 
         // Enemy Movement Timer (For blocky movement)
@@ -406,25 +416,25 @@ int main()
         shipBulletMovement(deltaTime, shipBullets);
 
         // Collison check for ship bullets
-        shipBulletCollisionCheck(shipBullets, enemies, xEnemies, yEnemies, spacing);
+        shipBulletCollisionCheck(shipBullets, enemies, soundEffectsEngine, xEnemies, yEnemies, spacing);
 
         // Add enemy bullets (cooldown)
-        enemyBulletSpawner(enemies, enemyBullets, xEnemies, yEnemies, spacing, enemyShootCooldown, randomNumberEnemies, deltaTime);
+        enemyBulletSpawner(enemies, enemyBullets, soundEffectsEngine, xEnemies, yEnemies, spacing, enemyShootCooldown, randomNumberEnemies, deltaTime);
 
         // Enemy Bullet Movement and Removal Code
         enemyBulletMovement(enemyBullets, deltaTime);
 
         // Collison check for enemy bullets
-        enemyBulletCollisionCheck(enemyBullets, rightLeftMove, upDownMove, shipLives, isShipDestroyed, isShipShielded);
+        enemyBulletCollisionCheck(enemyBullets, soundEffectsEngine ,rightLeftMove, upDownMove, shipLives, isShipDestroyed, isShipShielded);
 
         // Collison check for enemies hitbox
-        shipAndEnemyCollisionCheck(enemies, rightLeftMove, upDownMove, xEnemies, yEnemies, shipLives, spacing, isShipDestroyed);
+        shipAndEnemyCollisionCheck(enemies, soundEffectsEngine, rightLeftMove, upDownMove, xEnemies, yEnemies, shipLives, spacing, isShipDestroyed);
 
         // Falling Objects Movement and Removal Code
         fallingObjectsMovement(activeFallingObjects, deltaTime);
 
         // Collison check for falling object
-        fallingObjectCollisionCheck(activeFallingObjects, rightLeftMove, upDownMove, shipLives, shipSpeed, isShipDestroyed, isShipShielded, shipSlowTimer, shipFastTimer, shipShieldTimer, shipFirerateTimer, shootCooldownReduced, deltaTime);
+        fallingObjectCollisionCheck(activeFallingObjects, soundEffectsEngine, rightLeftMove, upDownMove, shipLives, shipSpeed, isShipDestroyed, isShipShielded, shipSlowTimer, shipFastTimer, shipShieldTimer, shipFirerateTimer, shootCooldownReduced, deltaTime);
 
         // Swaps the buffer to show img (this is to prevent stuttering)
         glfwSwapBuffers(mainWindow);
